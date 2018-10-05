@@ -1,0 +1,123 @@
+\documentclass{article}
+
+\usepackage{cmbright}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{hyperref}
+\usepackage{cleveref}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+\title{Algorithms Design for Bridge Problem}
+\author{Hanlin He\footnote{\texttt{hxh160630@utdallas.edu}},
+Lizhong Zhang\footnote{\texttt{lxz160730@utdallas.edu}}}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section*{Semaphores Algorithm}
+
+The solution using semaphores is shown in \cref{semaphore1}.
+
+\begin{algorithm}[H]
+\caption{Attempt Semaphores Solution}\label{semaphore1}
+\begin{algorithmic}
+    \State{int[2] $count \leftarrow \{0, 0\}$}
+    \State{semaphore[2] $mutex \leftarrow \{1, 1\}$}
+    \State{semaphore $service \leftarrow 1$}
+    \State{semaphore $resource \leftarrow 1$}
+    \State{}
+    \Function{arriveBridge}{$direction$}\Comment{Assume $direction$ is $0/1$}
+        \State{\Call{down}{$service$}}
+        \State{\Call{down}{$mutex[direction]$}}
+        \State{$count[direction] \leftarrow count[direction] + 1$}
+        \If{$count[direction] = 1$}\Comment{First one need to acquire $resource$}
+            \State{\Call{down}{$resource$}}
+        \EndIf{}
+        \State{\Call{up}{$mutex[direction]$}}
+        \State\Call{up}{$service$}
+    \EndFunction{}
+    \State{}
+    \Function{leaveBridge}{$direction$}
+        \State{\Call{down}{$mutex[direction]$}}
+        \State{$count[direction] \leftarrow count[direction] - 1$}
+        \If{$count[direction] = 0$}\Comment{Last one need to release $resource$}
+            \State{\Call{up}{resource}}
+        \EndIf{}
+        \State{\Call{up}{$mutex[direction]$}}
+    \EndFunction{}
+\end{algorithmic}
+\end{algorithm}
+
+\subsection*{Analysis}
+
+This algorithm mimic the reader logic in the `Fair Readers-Writers Solution'.
+It uses array of integers/semaphores for two directions and direction as the
+reference index into the array. Each $mutex[i]$ ensure exclusive read/write
+operation on each $count[i]$. Traffics from one direction can enter the bridge
+without waiting if no traffic was waiting on the other side (just like any
+number of readers can read if no writer was waiting). And as long as there is
+some traffics waiting on the other side, the after traffic will wait until the
+other end traffic enter bridge once.
+
+But this algorithm relies on the implementation of semaphores to ensure that
+all cars will come one direction after the other if both directions have
+traffic waiting. Consider scenario as follow:
+\begin{enumerate}
+    \item Process A first called \verb|arriveBridge| from direction $0$.
+    \item Before A return,
+        \begin{enumerate}
+            \item Process B called \verb|arriveBridge| from direction $1$.
+            \item Process C called \verb|arriveBridge| from direction $0$.
+        \end{enumerate}
+    \item Process A return from \verb|arriveBridge|.
+\end{enumerate}
+By requirement, the next process `cross the bridge' should be B. In the
+algorithm, both B and C are `spinning' on \verb|down(service)|. After A invoke
+\verb|leaveBridge| and release $service$, it depends on the implementation of
+the semaphore to determine which process among B and C could acquire the
+$service$. It's possible one side traffic got overtaken by the other side any
+number of times, but eventually the traffic will leave the bridge.
+
+\pagebreak
+
+\section*{Monitors Algorithm}
+
+The solution using monitors is shown in \cref{monitor}.
+
+\begin{algorithm}[H]
+\caption{Attempt Monitors Solution}\label{monitor}
+\begin{algorithmic}
+    \State{int $active[2] \leftarrow \{0, 0\}$}
+    \State{int $waiting[2] \leftarrow \{0, 0\}$}
+    \State{condition $canPass[2]$}
+    \State{}
+    \Function{arriveBridge}{$direction$}\Comment{Assume $direction$ is $0/1$}
+        \State{$other \leftarrow 1 - direction$}
+        \If{$active[other] + waiting[other] > 0$}
+            \State{$waiting[direction] \leftarrow waiting[direction] + 1$}
+            \State{\Call{wait}{$canPass[direction]$}}
+            \State{$waiting[direction] \leftarrow waiting[direction] - 1$}
+        \EndIf{}
+        \State{$active[direction] \leftarrow active[direction] + 1$}
+    \EndFunction{}
+    \State{}
+    \Function{leaveBridge}{$direction$}
+        \State{$other \leftarrow 1 - direction$}
+        \State{$active[direction] \leftarrow active[direction] - 1$}
+        \If{$waiting[other] > 0$}
+            \State{\Call{signalAll}{$canPass[other]$}}
+        \EndIf{}
+    \EndFunction{}
+\end{algorithmic}
+\end{algorithm}
+
+\subsection*{Analysis}
+
+This algorithm mimic the reader logic in the `Starvation Free Readers-Writers
+Solution with Monitors'.
+
+\end{document}
