@@ -1,7 +1,8 @@
 JFLAGS = -g
 JC = javac
 JE = java
-OBJECTS = Main.class cs6301/github/io/bridge/*.class cs6301/github/io/test/*.class
+BASE = cs6301/github/io
+OBJECTS = Main.class $(BASE)/bridge/*.class $(BASE)/test/*.class
 BRIDGE = semaphore
 CARS = 50
 
