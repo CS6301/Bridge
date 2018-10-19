@@ -9,13 +9,39 @@ import java.util.Queue;
 import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+/**
+ * TestDriver defines the experiment suite to test Bridge implementation
+ * using Semaphores and Monitors.
+ */
 public class TestDriver {
 
   private final static int ONBRIDGE = 500;
-  private final static DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+  private final static DateFormat DATE_FORMAT =
+    new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
   private final static String EVENT_FORMAT = "Car\t%d\tof\t%s\t%s\tat\t%s";
   private final static Queue<String> timeline = new ConcurrentLinkedQueue<>();
 
+  /**
+   * Car defines the basic action of a car as a thread. It first sleeps for a
+   * random amount of time, and then arrives at the bridge ( invoke arriveBridge
+   * function of the Bridge instance ). Once return from arriveBridge, it sleeps
+   * again for a random amount of time within 500ms, and then leave the bridge
+   * ( invoking leaveBridge function of hte Bridge instance).
+   *
+   * During runtime, each Car instance will record three event timestamp:
+   *    1. arriveTime,
+   *    2. enterTime,
+   *    3. leaveTime.
+   * Upon each event, Car thread will append a event timestamp to a queue. This
+   * queue can be used to check if the execution satisfy the algorithm demand.
+   *
+   * Since the order of the event can only be check after all Car thread
+   * finished, Car will print a dot (.) in standard output after leaving the
+   * bridge indicating the thread will finish.
+   *
+   * After all threads joined (finished), test will output the events list as
+   * well as the car list based on leaveTime order.
+   */
   class Car implements Runnable, Comparable<Car> {
     int id;
     Bridge.Direction direction;
@@ -85,11 +111,13 @@ public class TestDriver {
   private final Bridge bridge;
 
   public TestDriver(String bridgeType) {
-    this.bridgeType = bridgeType;
-    if (bridgeType.toLowerCase().startsWith("semaphore"))
+    if (bridgeType.toLowerCase().startsWith("semaphore")) {
       this.bridge = new SemaphoreBridge();
-    else
+      this.bridgeType = "semaphore";
+    } else {
       this.bridge = new MonitorBridge();
+      this.bridgeType = "monitor";
+    }
   }
 
   private void printEventTimeline() {

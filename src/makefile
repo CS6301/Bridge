@@ -6,8 +6,14 @@ OBJECTS = Main.class $(BASE)/bridge/*.class $(BASE)/test/*.class
 BRIDGE = semaphore
 CARS = 50
 
-Main.class: Main.java
+Main.class: $(BASE)/bridge/*.class $(BASE)/test/*.class Main.java
 	$(JC) $(JFLAGS) Main.java
+
+$(BASE)/bridge/*.class: $(BASE)/bridge/*.java
+	$(JC) $(JFLAGS) $(BASE)/bridge/*.java
+
+$(BASE)/test/*.class: $(BASE)/test/*.java
+	$(JC) $(JFLAGS) $(BASE)/test/*.java
 
 clean:
 	$(RM) $(OBJECTS)
@@ -15,4 +21,4 @@ clean:
 experiment: Main.class
 	$(JE) Main $(BRIDGE) $(CARS)
 
-.PHONY: all clean
+.PHONY: experiment clean
