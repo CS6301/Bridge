@@ -108,8 +108,12 @@ The solution using monitors is shown in \cref{monitor}.
     \Function{leaveBridge}{$direction$}
         \State{$other \leftarrow 1 - direction$}
         \State{$active[direction] \leftarrow active[direction] - 1$}
-        \If{$waiting[other] > 0$}
-            \State{\Call{signalAll}{$canPass[other]$}}
+        \If{$active[direction] = 0 \land waiting[other] > 0$}
+            \If{$waiting[direction] > 0$}
+                \State{\Call{signal}{$canPass[other]$}}
+            \Else
+                \State{\Call{signalAll}{$canPass[other]$}}
+            \EndIf{}
         \EndIf{}
     \EndFunction{}
 \end{algorithmic}
@@ -119,5 +123,11 @@ The solution using monitors is shown in \cref{monitor}.
 
 This algorithm mimic the reader logic in the `Starvation Free Readers-Writers
 Solution with Monitors'.
+
+During \verb|leaveBridge|, if current car is the last of its direction to leave
+the bridge for the moment, and there are cars waiting on the other side,
+prepare to signal the other end to pass. And if current car's direction also
+has cars waiting, then only signal one car from the other end to enter,
+otherwise, signal all cars on the other direction to enter.
 
 \end{document}

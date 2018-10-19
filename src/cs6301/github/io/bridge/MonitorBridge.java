@@ -65,10 +65,10 @@ public class MonitorBridge implements Bridge {
       // prepare to signal the other end to pass.
       if (active[dir] == 0 && waiting[other] > 0) {
         // if current car's direction also has cars waiting, then only
-        // signal one car of the other end to enter.
+        // signal one car from the other end to enter.
         if (waiting[dir] > 0)
           canPass[other].signal();
-        // otherwise, signal all car on the other direction to enter.
+        // otherwise, signal all cars on the other direction to enter.
         else
           canPass[other].signalAll();
       }
