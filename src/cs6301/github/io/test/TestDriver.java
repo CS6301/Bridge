@@ -26,7 +26,7 @@ public class TestDriver {
    * random amount of time, and then arrives at the bridge ( invoke arriveBridge
    * function of the Bridge instance ). Once return from arriveBridge, it sleeps
    * again for a random amount of time within 500ms, and then leave the bridge
-   * ( invoking leaveBridge function of hte Bridge instance).
+   * ( invoking leaveBridge function of the Bridge instance).
    *
    * During runtime, each Car instance will record three event timestamp:
    *    1. arriveTime,
