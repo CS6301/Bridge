@@ -2,6 +2,8 @@
 
 Bridge implementation using __Semaphores__ and __Monitors__ and experiments.
 
+This project is the course work of CS6301 Intro to Multicore Programming.
+
 __Author:__
 
 - Hanlin He (hxh160630@utdallas.edu)
